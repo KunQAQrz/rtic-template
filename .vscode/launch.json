@@ -1,0 +1,62 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+
+  // https://probe.rs/docs/tools/debugger
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "preLaunchTask": "${defaultBuildTask}",
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "name": "probe_rs launch",
+      "flashingConfig": {
+        "flashingEnabled": true
+      },
+      "consoleLogLevel": "Debug",
+      "chip": "STM32H743VITx", //!MODIFY
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          // "svdFile": "${workspaceFolder}/svd/STM32H743.svd", //!MODIFY (or remove)
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/rtic-template",
+
+          // 配置 RTT 以传输数据
+          "rttEnabled": true,
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              // Format RTT data as String data
+              "dataFormat": "String",
+              // Include host-side timestamps for every line of data transferred from the target RTT output
+              "showTimestamps": true
+            },
+            {
+              "channelNumber": 1,
+              // Treat data as raw binary data, and do not format in any way
+              "dataFormat": "BinaryLE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "probe-rs-debug",
+      "request": "attach",
+      "name": "probe_rs attach",
+      "cwd": "${workspaceFolder}",
+      "chip": "STM32H743VITx", //!MODIFY
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          // "svdFile": "${workspaceFolder}/svd/STM32H743.svd", //!MODIFY (or remove)
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/rtic-template"
+        }
+      ],
+      "env": {},
+      // Info, Debug
+      "consoleLogLevel": "Console"
+    }
+  ]
+}
