@@ -6,6 +6,7 @@
 use panic_rtt_target as _;
 use rtic_monotonics::systick::prelude::*;
 use rtt_target::{rprintln, rtt_init_print};
+use stm32h7xx_hal::gpio::*;
 use stm32h7xx_hal::prelude::*;
 
 systick_monotonic!(Mono, 1000);
@@ -13,15 +14,13 @@ systick_monotonic!(Mono, 1000);
 #[rtic::app(device = stm32h7xx_hal::pac, peripherals = true, dispatchers = [SPI1])]
 mod app {
     use super::*;
-    use stm32h7xx_hal::gpio;
-    use stm32h7xx_hal::gpio::*;
 
     #[shared]
     struct Shared {}
 
     #[local]
     struct Local {
-        led: gpio::Pin<'C', 1, Output<PushPull>>,
+        led: Pin<'C', 1, Output<PushPull>>,
     }
 
     #[init]
@@ -29,7 +28,7 @@ mod app {
         rtt_init_print!();
         rprintln!("init start");
 
-        rprintln!("Setup clocks");
+        rprintln!("Setup clocks...");
         let rcc = cx.device.RCC.constrain();
 
         let pwr = cx.device.PWR.constrain();
@@ -40,7 +39,7 @@ mod app {
 
         let ccdr = rcc.sys_ck(200.MHz()).freeze(pwr_cfg, &cx.device.SYSCFG);
 
-        rprintln!("Setup LED");
+        rprintln!("Setup LED...");
         let gpio: gpioc::Parts = cx.device.GPIOC.split(ccdr.peripheral.GPIOC);
         let mut led = gpio.pc1.into_push_pull_output();
         led.set_high();
@@ -58,10 +57,9 @@ mod app {
         loop {
             cx.local.led.toggle();
 
-            if let PinState::High = cx.local.led.get_state() {
-                rprintln!("LED off");
-            } else {
-                rprintln!("LED on");
+            match cx.local.led.get_state() {
+                PinState::High => rprintln!("LED off"),
+                _ => rprintln!("LED on"),
             }
 
             Mono::delay(1000.millis()).await;
